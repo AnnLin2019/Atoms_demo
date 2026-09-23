@@ -169,6 +169,11 @@ export function buildFiles(t: AppTemplate, appName: string, accent: string): Pro
 }
 
 export function matchTemplate(idea: string): AppTemplate {
+  return matchIdea(idea).template
+}
+
+/** 返回匹配到的模板与「是否真正命中」标记;matched=false 表示落到了通用占位模板 */
+export function matchIdea(idea: string): { template: AppTemplate; matched: boolean } {
   const text = idea.toLowerCase()
   let best: AppTemplate | null = null
   let bestScore = 0
@@ -181,7 +186,8 @@ export function matchTemplate(idea: string): AppTemplate {
       best = t
     }
   }
-  return best ?? TEMPLATES.find((t) => t.id === 'generic')!
+  const generic = TEMPLATES.find((t) => t.id === 'generic')!
+  return best ? { template: best, matched: true } : { template: generic, matched: false }
 }
 
 /* ================================================================== */
@@ -1228,6 +1234,145 @@ render();
   },
 })
 
+const pomodoro: AppTemplate = T('pomodoro', {
+  name: '番茄钟',
+  category: '效率工具',
+  emoji: '🍅',
+  defaultAccent: '#ef4444',
+  keywords: ['番茄', '番茄钟', '番茄工作法', '专注', '倒计时', '计时', '计时器', 'pomodoro', '专注时钟', '时间管理', 'timer'],
+  description: '一款遵循番茄工作法的专注计时应用,支持工作/休息循环与番茄统计。',
+  audience: '需要提升专注力、告别拖延的学生与知识工作者',
+  features: ['25/5/15 分钟经典番茄循环', '开始 / 暂停 / 重置 / 跳过', '今日番茄数统计', '专注 / 短休 / 长休三模式', '自定义时长,本地持久化'],
+  stack: ['HTML5', 'CSS3', 'Vanilla JS', 'LocalStorage'],
+  components: ['TimerRing 计时圆环', 'ModeSwitch 模式切换', 'PomodoroCounter 番茄统计', 'SettingsPanel 时长设置'],
+  part: {
+    html: `
+<div class="app">
+  <header class="hdr">
+    <div class="brand"><span class="logo">🍅</span><div><h1>{{name}}</h1><p class="sub">一次只做一件事 · 保持专注</p></div></div>
+    <div class="count"><span>🍅</span> × <b id="count">0</b></div>
+  </header>
+  <div class="modes">
+    <button class="mode active" data-m="work">专注</button>
+    <button class="mode" data-m="short">短休息</button>
+    <button class="mode" data-m="long">长休息</button>
+  </div>
+  <div class="stage">
+    <svg class="ring" viewBox="0 0 220 220">
+      <circle class="track" cx="110" cy="110" r="98" />
+      <circle class="bar" id="bar" cx="110" cy="110" r="98" />
+    </svg>
+    <div class="time">
+      <div class="mm" id="time">25:00</div>
+      <div class="label" id="label">专注中,保持节奏</div>
+    </div>
+  </div>
+  <div class="ctrl">
+    <button class="btn reset" id="reset" title="重置">↺</button>
+    <button class="btn start" id="start">开始</button>
+    <button class="btn skip" id="skip" title="跳过">⏭</button>
+  </div>
+  <div class="settings">
+    <div class="set"><span>专注</span><input id="set-work" type="number" min="1" max="120"><span class="u">分钟</span></div>
+    <div class="set"><span>短休</span><input id="set-short" type="number" min="1" max="60"><span class="u">分钟</span></div>
+    <div class="set"><span>长休</span><input id="set-long" type="number" min="1" max="60"><span class="u">分钟</span></div>
+  </div>
+</div>`,
+    css: `
+:root{--bg:#0b0d14;--card:#141824;--card2:#181d2c;--text:#e7eaf3;--muted:#8a92a6;--border:#232a3d;--accent:#ef4444;--accent-2:#f87171;--accent-soft:rgba(239,68,68,.14);--accent-soft-2:rgba(239,68,68,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:radial-gradient(1000px 520px at 50% -10%,var(--accent-soft-2),transparent),var(--bg);color:var(--text);min-height:100vh;padding:28px 16px}
+.app{max-width:520px;margin:0 auto}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+h1{font-size:21px}
+.sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.count{background:var(--card);border:1px solid var(--border);padding:8px 16px;border-radius:999px;font-size:14px;color:var(--muted)}
+.count b{color:var(--accent-2);font-size:18px;margin-left:2px;font-variant-numeric:tabular-nums}
+.modes{display:flex;gap:8px;justify-content:center;margin-bottom:6px}
+.mode{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:8px 20px;border-radius:999px;font-size:13px;cursor:pointer;transition:.15s}
+.mode.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-2);font-weight:600}
+.stage{position:relative;width:264px;height:264px;margin:26px auto 22px}
+.ring{width:100%;height:100%;transform:rotate(-90deg)}
+.track{fill:none;stroke:var(--card2);stroke-width:12}
+.bar{fill:none;stroke:var(--accent);stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.mm{font-size:52px;font-weight:800;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+.label{color:var(--muted);font-size:13px}
+.ctrl{display:flex;align-items:center;justify-content:center;gap:16px}
+.btn{border:none;cursor:pointer;font-weight:600;transition:.15s;font-family:inherit}
+.btn.reset,.btn.skip{width:48px;height:48px;border-radius:50%;background:var(--card);border:1px solid var(--border);color:var(--muted);font-size:17px}
+.btn.reset:hover,.btn.skip:hover{color:var(--accent-2);border-color:var(--accent)}
+.btn.start{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-radius:999px;padding:14px 48px;font-size:16px;box-shadow:0 12px 32px var(--accent-soft)}
+.btn.start:hover{filter:brightness(1.08)}
+.btn.start.running{background:var(--card2);color:var(--text);border:1px solid var(--border);box-shadow:none}
+.settings{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.set{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px}
+.set>span{color:var(--muted);font-size:12.5px}
+.set input{width:46px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);text-align:center;font-size:14px;outline:none;font-variant-numeric:tabular-nums}
+.set input:focus{border-color:var(--accent)}
+.set .u{color:var(--muted);font-size:11px}
+`,
+    js: `
+var KEY='atoms.pomo.v1';
+var cfg={work:25,short:5,long:15,count:0};
+try{var saved=JSON.parse(store.get(KEY,'{}'));for(var k in saved)cfg[k]=saved[k]}catch(e){}
+var M={work:{label:'专注中,保持节奏'},short:{label:'休息一下,喝口水'},long:{label:'好好放松,准备下一轮'}};
+var mode='work',total=cfg.work*60,remaining=total,running=false,tickId=null;
+var R=98,CIRC=2*Math.PI*R;
+var bar=document.getElementById('bar');
+bar.style.strokeDasharray=CIRC.toFixed(2);
+function save(){store.set(KEY,JSON.stringify(cfg))}
+function fmt(s){var mm=Math.floor(s/60),ss=s%60;return (mm<10?'0':'')+mm+':'+(ss<10?'0':'')+ss}
+function paint(){
+  document.getElementById('time').textContent=fmt(remaining);
+  bar.style.strokeDashoffset=(CIRC*(1-remaining/total)).toFixed(2);
+  document.getElementById('label').textContent=M[mode].label;
+}
+function renderCount(){document.getElementById('count').textContent=cfg.count}
+function setModes(){Array.prototype.forEach.call(document.querySelectorAll('.mode'),function(b){b.classList.toggle('active',b.getAttribute('data-m')===mode)})}
+function switchMode(m){mode=m;total=cfg[m]*60;remaining=total;setModes();paint()}
+function beep(){try{var A=window.AudioContext||window.webkitAudioContext;if(!A)return;var ac=new A();var o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=880;g.gain.value=0.12;o.start();setTimeout(function(){try{o.stop();ac.close()}catch(e){}},200)}catch(e){}}
+function start(){
+  if(running)return;running=true;
+  document.getElementById('start').textContent='暂停';
+  document.getElementById('start').classList.add('running');
+  tickId=setInterval(function(){
+    remaining--;
+    if(remaining<=0){remaining=0;paint();beep();complete();}
+    else paint();
+  },1000);
+}
+function pause(){
+  running=false;if(tickId)clearInterval(tickId);tickId=null;
+  document.getElementById('start').textContent='继续';
+  document.getElementById('start').classList.remove('running');
+}
+function complete(){
+  var was=mode;
+  if(was==='work'){cfg.count++;save();renderCount()}
+  var next=(was==='work')?((cfg.count%4===0)?'long':'short'):'work';
+  switchMode(next);
+}
+document.getElementById('start').onclick=function(){if(running)pause();else start()};
+document.getElementById('reset').onclick=function(){pause();remaining=total;paint();document.getElementById('start').textContent='开始'};
+document.getElementById('skip').onclick=function(){pause();var next=mode==='work'?'short':'work';switchMode(next);document.getElementById('start').textContent='开始'};
+Array.prototype.forEach.call(document.querySelectorAll('.mode'),function(b){b.onclick=function(){pause();switchMode(b.getAttribute('data-m'));document.getElementById('start').textContent='开始'}});
+['work','short','long'].forEach(function(m){
+  var el=document.getElementById('set-'+m);el.value=cfg[m];
+  el.onchange=function(){
+    var v=parseInt(el.value,10);
+    if(!v||v<1||v>180){el.value=cfg[m];return}
+    cfg[m]=v;save();
+    if(mode===m){total=v*60;remaining=v*60;paint()}
+  };
+});
+renderCount();setModes();paint();
+`,
+  },
+})
+
 const generic: AppTemplate = T('generic', {
   name: '全新应用',
   category: '通用',
@@ -1285,4 +1430,4 @@ console.log('应用已启动');
   },
 })
 
-export const TEMPLATES: AppTemplate[] = [todo, notes, weather, fitness, expense, dashboard, landing, blog, habit, generic]
+export const TEMPLATES: AppTemplate[] = [todo, notes, weather, fitness, expense, dashboard, landing, blog, habit, pomodoro, generic]

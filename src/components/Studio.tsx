@@ -59,6 +59,9 @@ export default function Studio() {
     [proj],
   )
 
+  // 想法未命中任何内置模板时落到「通用占位」模板 → 明确提示用户,而非静默生成空壳页
+  const unmatched = template.id === 'generic'
+
   // 持久化:项目状态变化即保存
   useEffect(() => {
     if (proj) saveProject(proj)
@@ -88,12 +91,14 @@ export default function Studio() {
     if (wantAi) {
       startAiBuild(proj)
     } else {
-      launchBuild(
-        proj,
-        undefined,
-        undefined,
-        proj.generator === 'ai' ? '未检测到可用的大模型配置,已改用内置模板生成。' : undefined,
-      )
+      let warn: string | undefined
+      if (proj.generator === 'ai') {
+        warn = '未检测到可用的大模型配置,已改用内置模板生成。'
+      } else if (unmatched) {
+        warn =
+          '该想法未匹配到内置模板,已生成通用占位应用;如需真正可用的专属功能,请回工作台配置大模型并勾选「大模型实时生成」。'
+      }
+      launchBuild(proj, undefined, undefined, warn)
     }
 
     return () => {

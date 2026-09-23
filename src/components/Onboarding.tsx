@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 import { useAuth } from '../lib/auth'
 import { createProject } from '../lib/engine'
 import { saveProject } from '../lib/store'
 import { llmReady } from '../lib/llm'
+import { matchIdea } from '../lib/templates'
 import { AGENTS } from '../lib/agents'
 
 const SUGGESTIONS = [
@@ -24,6 +25,14 @@ export default function Onboarding() {
   const [idea, setIdea] = useState('')
   const [starting, setStarting] = useState(false)
   const [useAi, setUseAi] = useState<boolean>(() => llmReady())
+
+  // 该想法是否命中内置模板;未命中时明确引导用户走大模型,而非静默生成通用占位页
+  const matched = useMemo(() => !idea.trim() || matchIdea(idea.trim()).matched, [idea])
+
+  // 未命中模板且已配置大模型时,默认自动开启「大模型实时生成」
+  useEffect(() => {
+    if (!matched && llmReady() && !useAi) setUseAi(true)
+  }, [matched, useAi])
 
   async function start() {
     const v = idea.trim()
@@ -72,6 +81,14 @@ export default function Onboarding() {
               </button>
             ))}
           </div>
+
+          {!matched && (
+            <div className="ob-warn">
+              {llmReady()
+                ? '这个想法暂未匹配到内置模板,已为你自动开启「大模型实时生成」,由大模型现场编写专属应用。'
+                : '这个想法暂未匹配到内置模板,继续将生成一个通用占位页(无实际功能)。建议先在工作台「模型设置」填入 API Key,并开启下方「大模型实时生成」,获得真正可用的应用。'}
+            </div>
+          )}
 
           <label className="gen-toggle">
             <input type="checkbox" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} />
