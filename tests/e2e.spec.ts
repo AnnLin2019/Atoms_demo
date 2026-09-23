@@ -43,4 +43,12 @@ test('完整流程:注册 → 新建项目 → 构建 → 上线', async ({ page
   // 10. 发布视图显示成功
   await page.locator('.pane-tab', { hasText: '发布' }).click()
   await expect(page.getByText('发布成功!')).toBeVisible()
+
+  // 11. 分享链接可独立访问:打开后能渲染出应用(而非 404 或空页)
+  const shareHref = await page.locator('.pv-open').getAttribute('href')
+  expect(shareHref).toBeTruthy()
+  await page.goto(shareHref as string)
+  await expect(page.locator('.share-view iframe')).toBeVisible()
+  const srcdoc = (await page.locator('.share-view iframe').getAttribute('srcdoc')) ?? ''
+  expect(srcdoc.length).toBeGreaterThan(200)
 })

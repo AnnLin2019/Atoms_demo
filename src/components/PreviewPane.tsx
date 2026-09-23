@@ -89,20 +89,25 @@ export default function PreviewPane({ status, progress, files, preview, deployUr
                 <div className="pv-emoji">🎉</div>
                 <h3>发布成功!</h3>
                 <p>
-                  「{appName}」已上线到云端。复制下方链接分享给任何人,即可访问你的产品。
+                  「{appName}」已生成一个可直接访问、可分享的链接,任何人打开即可运行,无需登录。
                 </p>
                 <div className="pv-url">
-                  <span className="url">https://{appName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'app'}.atoms.app</span>
+                  <span className="url" title={deployUrl}>
+                    {deployUrl}
+                  </span>
                   <button onClick={copyUrl}>{copied ? '✓ 已复制' : '复制'}</button>
+                  <a className="pv-open" href={deployUrl} target="_blank" rel="noreferrer">
+                    打开 ↗
+                  </a>
                 </div>
                 <div className="pv-stats">
                   <div className="pv-stat">
-                    <b>100%</b>
-                    <span>可用性</span>
+                    <b>自包含</b>
+                    <span>代码内嵌链接</span>
                   </div>
                   <div className="pv-stat">
-                    <b>全球</b>
-                    <span>CDN 加速</span>
+                    <b>可分享</b>
+                    <span>任何人可打开</span>
                   </div>
                   <div className="pv-stat">
                     <b>HTTPS</b>
@@ -117,7 +122,7 @@ export default function PreviewPane({ status, progress, files, preview, deployUr
                     ← 返回预览
                   </div>
                 </div>
-                <p className="pv-note">下载后得到一个单文件 HTML,双击即可离线运行,也可托管到任意静态空间(如 GitHub Pages / Vercel / Netlify)。</p>
+                <p className="pv-note">链接内含应用的完整代码,因此较长;想要更短的域名,可下载独立 HTML 后托管到任意静态空间(如 GitHub Pages / Vercel / Netlify)。</p>
               </div>
             </div>
           ) : (

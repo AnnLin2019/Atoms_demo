@@ -16,6 +16,7 @@ import {
 import { generateApp } from '../lib/aiGenerate'
 import { getLlmConfig, llmReady } from '../lib/llm'
 import { getProject, saveProject, uid } from '../lib/store'
+import { buildShareLink } from '../lib/share'
 import type { Project } from '../lib/types'
 
 const COLORS: { label: string; hex: string; keys: string[] }[] = [
@@ -34,10 +35,6 @@ function detectColor(text: string): { hex: string; label: string } | null {
   if (!/主题|颜色|配色|色调|主色|皮肤/.test(text)) return null
   for (const c of COLORS) for (const k of c.keys) if (text.includes(k)) return { hex: c.hex, label: c.label }
   return null
-}
-
-function deployUrlFor(appName: string): string {
-  return 'https://' + (appName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'app') + '.atoms.app'
 }
 
 interface AiOverride {
@@ -66,6 +63,14 @@ export default function Studio() {
   useEffect(() => {
     if (proj) saveProject(proj)
   }, [proj])
+
+  // 迁移:把旧项目里伪造的 atoms.app 链接替换为真正可访问的自包含链接
+  useEffect(() => {
+    if (proj && proj.status === 'ready' && proj.preview && (!proj.deployUrl || proj.deployUrl.includes('.atoms.app'))) {
+      setProj((p) => (p ? { ...p, deployUrl: buildShareLink(p.preview) } : p))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proj?.id])
 
   // 构建生命周期
   useEffect(() => {
@@ -174,7 +179,7 @@ export default function Studio() {
       done: true,
     }))
     setProgress(100)
-    setProj({ ...prev, status: 'ready', preview, files, deployUrl: deployUrlFor(prev.appName) })
+    setProj({ ...prev, status: 'ready', preview, files, deployUrl: buildShareLink(preview) })
   }
 
   function handleCommand(text: string) {
@@ -253,8 +258,8 @@ export default function Studio() {
               <div className="progress-fill" style={{ width: progress + '%' }} />
             </div>
           )}
-          <span className="chip" title="部署地址">
-            {building ? '部署准备中…' : deployUrlFor(proj.appName).replace('https://', '')}
+          <span className="chip" title="在「发布」页查看可分享的访问链接">
+            {building ? '部署准备中…' : '🔗 分享链接已生成'}
           </span>
         </div>
       </div>
@@ -266,7 +271,7 @@ export default function Studio() {
           progress={progress}
           files={proj.files}
           preview={proj.preview}
-          deployUrl={proj.deployUrl || deployUrlFor(proj.appName)}
+          deployUrl={proj.deployUrl}
           appName={proj.appName}
           previewKey={previewKey}
           aiWaiting={aiWaiting}

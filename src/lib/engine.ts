@@ -9,6 +9,7 @@ import type {
   ProjectStatus,
 } from './types'
 import { uid } from './store'
+import { buildShareLink } from './share'
 import {
   assemble,
   buildFilesFromPart,
@@ -322,7 +323,7 @@ export function runBuild(input: {
     run: (s) => {
       s.progress = 100
       s.status = 'ready'
-      s.deployUrl = 'https://' + (appName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'app') + '.atoms.app'
+      s.deployUrl = buildShareLink(s.preview)
       s.messages.push({
         id: uid(),
         role: 'agent',

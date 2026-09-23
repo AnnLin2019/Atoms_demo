@@ -6,6 +6,7 @@ import AuthForm from './components/AuthForm'
 import Onboarding from './components/Onboarding'
 import Projects from './components/Projects'
 import Studio from './components/Studio'
+import ShareView from './components/ShareView'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user } = useAuth()
@@ -66,6 +67,7 @@ export default function App() {
               </RequireAuth>
             }
           />
+          <Route path="/view/:encoded" element={<ShareView />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
