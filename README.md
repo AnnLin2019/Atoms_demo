@@ -49,6 +49,13 @@ npm run build    # 构建到 dist/
 npm run preview  # 预览构建产物
 ```
 
+端到端自动化验证(首次需 `npx playwright install chromium`):
+
+```bash
+npm run test:e2e                                              # 默认针对线上 demo
+BASE_URL=http://localhost:5173 npm run test:e2e               # 针对本地开发服务器
+```
+
 ## 🤖 接入真实大模型(可选)
 
 1. 登录进入工作台 → 点击「🤖 模型设置」

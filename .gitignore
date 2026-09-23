@@ -4,3 +4,9 @@ dist
 .DS_Store
 npm-debug.log*
 .claude/
+
+# Playwright 产物
+test-results/
+playwright-report/
+blob-report/
+.playwright/
