@@ -12,6 +12,9 @@
 <img src="https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react&logoColor=white" alt="React" />
 <img src="https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
 <img src="https://img.shields.io/badge/Vite-5-646cff?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+<a href="./LICENSE">
+<img src="https://img.shields.io/badge/License-MIT-22c55e?style=flat-square" alt="License" />
+</a>
 
 </div>
 
