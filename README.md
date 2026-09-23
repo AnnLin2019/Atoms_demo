@@ -1,5 +1,20 @@
 # Atoms Demo · 把想法变成产品
 
+<div align="center">
+
+<a href="https://AnnLin2019.github.io/Atoms_demo/">
+ <img src="https://img.shields.io/badge/在线演示-Live_Now-7c5cff?style=for-the-badge" alt="在线演示" />
+</a>
+<a href="https://github.com/AnnLin2019/Atoms_demo/actions/workflows/deploy.yml">
+ <img src="https://github.com/AnnLin2019/Atoms_demo/actions/workflows/deploy.yml/badge.svg?branch=main" alt="部署状态" />
+</a>
+<br />
+<img src="https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react&logoColor=white" alt="React" />
+<img src="https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+<img src="https://img.shields.io/badge/Vite-5-646cff?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+
+</div>
+
 基于 [Atoms](https://atoms.dev/) / MGX 理念打造的**下一代 AI Agent 平台演示** —— 用智能体驱动的方式把想法变成可运行的应用,全程无需编码。
 
 🔗 **在线演示**:https://AnnLin2019.github.io/Atoms_demo/
